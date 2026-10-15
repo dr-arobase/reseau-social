@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.env
+*.log
+uploads/
+
+# --- ajouté automatiquement (sécurité) ---
+node_modules/
+.venv/
+venv/
+__pycache__/
+dist/
+*.log
+.env
+.env.*
+!.env.example
+api.txt
+hs_err_pid*.log
+desktop.ini
+Desktop.ini

@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: a-propos-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: a_propos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - a-propos-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  a-propos-postgres-data:

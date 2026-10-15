@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  handle        String    @unique
+  bio           String    @default("")
+  passwordHash  String
+  avatarUrl     String?
+  founderNumber Int?      @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  posts         Post[]
+  comments      Comment[]
+  stories       Story[]
+  following     Follow[]  @relation("following")
+  followers     Follow[]  @relation("followers")
+  likes         Like[]
+  blocking      Block[]   @relation("blocking")
+  blockedBy     Block[]   @relation("blockedBy")
+  reports       Report[]  @relation("reporter")
+  reportedIn    Report[]  @relation("reportedUser")
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  content   String    @default("")
+  imageUrl  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  likes     Like[]
+  reports   Report[]
+
+  @@index([authorId, createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  authorId  String
+  postId    String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+}
+
+model Like {
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+}
+
+model Story {
+  id        String   @id @default(cuid())
+  content   String   @default("")
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
+
+model Block {
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocker   User     @relation("blocking", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("blockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+}
+
+model Report {
+  id         String   @id @default(cuid())
+  reason     String
+  createdAt  DateTime @default(now())
+  reporterId String
+  postId     String?
+  userId     String?
+  reporter   User     @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  post       Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user       User?    @relation("reportedUser", fields: [userId], references: [id], onDelete: Cascade)
+}
